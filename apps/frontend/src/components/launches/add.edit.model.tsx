@@ -131,8 +131,29 @@ export const AddEditModal: FC<{
   const changeValue = useCallback(
     (index: number) => (newValue: string) => {
       return setValue((prev) => {
-        prev[index].content = newValue;
-        return [...prev];
+        return prev.reduce((acc, p, i) => {
+          if (i === index) {
+            p.content = newValue;
+          }
+
+          const delim = '///';
+          const split = p.content.split(delim);
+          if (split.length <= 1) {
+            acc.push(p);
+          } else {
+            acc = acc.concat(split.map((splitContent, j) => {
+              if (j === 0) {
+                return { ...p, content: splitContent.trimEnd() }
+              } else if (j === split.length - 1) {
+                return { content: splitContent.trimStart() }
+              } else {
+                return { content: splitContent.trim() }
+              }
+            }));
+          }
+
+          return acc;
+        }, [] as Array<{ content: string }>);
       });
     },
     [value]
